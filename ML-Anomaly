@@ -20,8 +20,15 @@ grouped_df = df_filtered.groupby(['timestamp', 'response_code']).sum().reset_ind
 # Pivot the DataFrame to make 'response_code' values as columns
 pivot_df = grouped_df.pivot(index='timestamp', columns='response_code', values='count').fillna(0)
 
-# Plotting
-pivot_df.plot(kind='area', stacked=True, figsize=(10, 6))
+# Plotting as a bar chart with text annotations
+ax = pivot_df.plot(kind='bar', stacked=True, figsize=(10, 6))
+
+# Add text annotations on top of each bar
+for p in ax.patches:
+    width, height = p.get_width(), p.get_height()
+    x, y = p.get_xy() 
+    ax.annotate(f'{height}', (x + width/2, y + height), ha='center', va='center', color='black', fontsize=8)
+
 plt.title('Response Codes Over Time')
 plt.xlabel('Timestamp')
 plt.ylabel('Count')
