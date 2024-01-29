@@ -6,6 +6,9 @@ import matplotlib.pyplot as plt
 # Load your data
 df = pd.read_csv('your_file.csv')
 
+# Convert the timestamp column to datetime format
+df['timestamp'] = pd.to_datetime(df['timestamp'])
+
 # Select the feature for anomaly detection
 X = df[['count']]
 
@@ -20,11 +23,13 @@ model.fit(X_scaled)
 # Predict outliers (anomalies)
 df['anomaly'] = model.predict(X_scaled)
 
-# Visualize the anomalies
+# Visualize the anomalies with a line plot
 plt.figure(figsize=(12, 6))
-plt.scatter(df.index, df['count'], c=df['anomaly'], cmap='viridis', marker='o')
+plt.plot(df['timestamp'], df['count'], color='blue', label='Count')
+plt.plot(df['timestamp'][df['anomaly'] == -1], df['count'][df['anomaly'] == -1], 'ro', markersize=8, label='Anomaly')
 plt.title('Anomaly Detection with Isolation Forest')
-plt.xlabel('Index')
+plt.xlabel('Timestamp')
 plt.ylabel('Count')
-plt.colorbar(label='Anomaly (1: Normal, -1: Anomaly)')
+plt.legend()
+plt.xticks(rotation=45)
 plt.show()
