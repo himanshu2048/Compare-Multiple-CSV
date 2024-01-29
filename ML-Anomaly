@@ -1,4 +1,5 @@
 import pandas as pd
+from sklearn.ensemble import IsolationForest
 import matplotlib.pyplot as plt
 
 # Replace 'your_file.csv' with the actual file path
@@ -20,16 +21,23 @@ grouped_df = df_filtered.groupby(['timestamp', 'response_code']).sum().reset_ind
 # Pivot the DataFrame to make 'response_code' values as columns
 pivot_df = grouped_df.pivot(index='timestamp', columns='response_code', values='count').fillna(0)
 
-# Plotting as a bar chart with text annotations
-ax = pivot_df.plot(kind='bar', stacked=True, figsize=(10, 6))
+# Use Isolation Forest for anomaly detection
+model = IsolationForest(contamination=0.05)  # Adjust the contamination parameter as needed
+anomaly_labels = model.fit_predict(pivot_df.values.reshape(-1, 1))
 
-# Add text annotations on top of each bar
-for p in ax.patches:
-    width, height = p.get_width(), p.get_height()
-    x, y = p.get_xy() 
-    ax.annotate(f'{height}', (x + width/2, y + height), ha='center', va='center', color='black', fontsize=8)
+# Add a column 'anomaly' to the DataFrame
+pivot_df['anomaly'] = anomaly_labels
 
-plt.title('Response Codes Over Time')
+# Plotting
+fig, ax = plt.subplots(figsize=(10, 6))
+
+# Plotting non-anomalous points in blue
+pivot_df[pivot_df['anomaly'] == 1].drop('anomaly', axis=1).plot(kind='bar', stacked=True, ax=ax, colormap='viridis')
+
+# Plotting anomalous points in red
+pivot_df[pivot_df['anomaly'] == -1].drop('anomaly', axis=1).plot(kind='bar', stacked=True, ax=ax, colormap='viridis', color='red', alpha=0.7)
+
+plt.title('Response Codes Over Time with Anomaly Detection')
 plt.xlabel('Timestamp')
 plt.ylabel('Count')
 plt.legend(title='Response Code', bbox_to_anchor=(1.05, 1), loc='upper left')
