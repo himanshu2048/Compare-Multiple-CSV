@@ -3,11 +3,14 @@ from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report, accuracy_score
 
+# Assuming result_df is your DataFrame
+# ...
+
 # Step 1: Create a new column indicating success or failure
 result_df['is_failure'] = result_df['response_code'].isin([400, 401, 404, 409, 502])
 
 # Step 2: Define features and target variable
-features = result_df.drop(['currentMillies', 'response_code', 'is_failure'], axis=1)
+features = result_df.drop(['is_failure'], axis=1)  # Include 'currentMillies' in features
 target = result_df['is_failure']
 
 # Step 3: Split the data into training and testing sets
@@ -28,7 +31,7 @@ print("Accuracy:", accuracy_score(y_test, y_pred))
 
 # Step 7: Use the trained model to predict anomalies in new data
 new_data = ...  # Your new data in the same format as result_df
-new_data['is_failure'] = model.predict(new_data.drop(['currentMillies', 'response_code'], axis=1))
+new_data['is_failure'] = model.predict(new_data)
 
 # Export the new_data DataFrame to a CSV file if needed
 new_data.to_csv('new_data_with_predictions.csv', index=False)
