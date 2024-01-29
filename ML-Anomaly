@@ -1,37 +1,16 @@
 import pandas as pd
-from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import classification_report, accuracy_score
+import matplotlib.pyplot as plt
 
-# Assuming result_df is your DataFrame
-# ...
+# Assuming your CSV file is named 'your_file.csv'
+file_path = 'your_file.csv'
 
-# Step 1: Create a new column indicating success or failure
-result_df['is_failure'] = result_df['response_code'].isin([400, 401, 404, 409, 502])
+# Load CSV into a Pandas DataFrame
+df = pd.read_csv(file_path)
 
-# Step 2: Define features and target variable
-features = result_df.drop(['is_failure'], axis=1)  # Include 'currentMillies' in features
-target = result_df['is_failure']
-
-# Step 3: Split the data into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(features, target, test_size=0.2, random_state=42)
-
-# Step 4: Train a machine learning model (Random Forest Classifier as an example)
-model = RandomForestClassifier(random_state=42)
-model.fit(X_train, y_train)
-
-# Step 5: Evaluate the model on the testing set
-y_pred = model.predict(X_test)
-
-# Step 6: Print classification report and accuracy
-print("Classification Report:")
-print(classification_report(y_test, y_pred))
-
-print("Accuracy:", accuracy_score(y_test, y_pred))
-
-# Step 7: Use the trained model to predict anomalies in new data
-new_data = ...  # Your new data in the same format as result_df
-new_data['is_failure'] = model.predict(new_data)
-
-# Export the new_data DataFrame to a CSV file if needed
-new_data.to_csv('new_data_with_predictions.csv', index=False)
+# Plotting a bar chart
+plt.figure(figsize=(10, 6))
+plt.bar(df['response_code'], df['count'], color='blue')
+plt.xlabel('Response Code')
+plt.ylabel('Count')
+plt.title('Response Code Distribution')
+plt.show()
