@@ -1,44 +1,27 @@
 import pandas as pd
 from sklearn.ensemble import IsolationForest
-import matplotlib.pyplot as plt
 
-# Replace 'your_file.csv' with the actual file path
-file_path = 'your_file.csv'
+# Assuming your CSV file is named 'your_file.csv'
+csv_file_path = 'your_file.csv'
 
 # Load CSV into DataFrame
-df = pd.read_csv(file_path)
+df = pd.read_csv(csv_file_path)
 
-# Exclude success response codes
-exclude_response_codes = [200, 201, 204]
-df_filtered = df[~df['response_code'].isin(exclude_response_codes)]
+# Create a DataFrame with only the 'count' column (features)
+X = df[['count']]
 
-# Convert 'timestamp' column to datetime format
-df_filtered['timestamp'] = pd.to_datetime(df_filtered['timestamp'])
+# Initialize and fit the Isolation Forest model
+model = IsolationForest(contamination=0.05)  # You can adjust the contamination parameter based on your data
+model.fit(X)
 
-# Group by 'timestamp' and 'response_code', summing the 'count'
-grouped_df = df_filtered.groupby(['timestamp', 'response_code']).sum().reset_index()
+# Predict outliers (anomalies)
+df['anomaly'] = model.predict(X)
 
-# Pivot the DataFrame to make 'response_code' values as columns
-pivot_df = grouped_df.pivot(index='timestamp', columns='response_code', values='count').fillna(0)
+# Filter rows with anomalies
+anomalies = df[df['anomaly'] == -1]
 
-# Use Isolation Forest for anomaly detection
-model = IsolationForest(contamination=0.05)  # Adjust the contamination parameter as needed
-anomaly_labels = model.fit_predict(pivot_df.values.reshape(-1, 1))
+# Drop the 'anomaly' column if you don't need it anymore
+anomalies = anomalies.drop(columns=['anomaly'])
 
-# Add a column 'anomaly' to the DataFrame
-pivot_df['anomaly'] = anomaly_labels
-
-# Plotting
-fig, ax = plt.subplots(figsize=(10, 6))
-
-# Plotting non-anomalous points in blue
-pivot_df[pivot_df['anomaly'] == 1].drop('anomaly', axis=1).plot(kind='bar', stacked=True, ax=ax, colormap='viridis')
-
-# Plotting anomalous points in red
-pivot_df[pivot_df['anomaly'] == -1].drop('anomaly', axis=1).plot(kind='bar', stacked=True, ax=ax, colormap='viridis', color='red', alpha=0.7)
-
-plt.title('Response Codes Over Time with Anomaly Detection')
-plt.xlabel('Timestamp')
-plt.ylabel('Count')
-plt.legend(title='Response Code', bbox_to_anchor=(1.05, 1), loc='upper left')
-plt.show()
+# Display the anomalies
+print(anomalies)
