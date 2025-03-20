@@ -1,6 +1,7 @@
-function removeSpecificCharacters(str) {
-    return str.replace(/[.*+?^${}]/g, ''); // Remove only these characters
+function removeRegexCharacters(str) {
+    return str.replace(/[.*+?^${}()|[\]\\-]/g, '');
 }
 
-console.log(removeSpecificCharacters("Hello.*+?^${}()|[]\\World")); 
-// Output: "Hello()|[]\World"
+const input = "Hello-.*+?^${}()|[]\\World";
+const output = removeRegexCharacters(input);
+console.log(output); // "HelloWorld"
